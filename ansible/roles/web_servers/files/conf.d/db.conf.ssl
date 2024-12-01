@@ -1,0 +1,30 @@
+
+server {
+
+  listen 443 ssl;
+  listen [::]:443 ssl;
+  # server_name db.damilola.chickenkiller.com;
+  server_name db.damilola.jumpingcrab.com;
+
+  ssl_certificate /etc/letsencrypt/live/damilola.jumpingcrab.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/damilola.jumpingcrab.com/privkey.pem;
+
+
+  location / {
+    
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Scheme $scheme;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-For    $remote_addr;
+    proxy_set_header X-Real-IP		$remote_addr;
+
+    set $proxy_forward_scheme http;
+    set $proxy_server         "adminer";
+    set $proxy_port           8080;
+
+    proxy_pass       $proxy_forward_scheme://$proxy_server:$proxy_port;    
+  
+  }
+
+}
+

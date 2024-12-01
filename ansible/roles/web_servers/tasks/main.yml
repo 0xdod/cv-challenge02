@@ -1,0 +1,59 @@
+- name: Ensure Docker Exists
+  script:
+    cmd: "install-docker.sh"
+
+- name: Ensure parent directory exist
+  file:
+    path: "/home/ubuntu/app"
+    state: directory
+    mode: "0755"
+
+- name: Copy files
+  copy:
+    src: "{{ item.src }}"
+    dest: "/home/ubuntu/app/{{ item.dest }}"
+  loop:
+    - src: "docker-compose.app.yml"
+      dest: "docker-compose.app.yml"
+    - src: "docker-compose.monitoring.yml"
+      dest: "docker-compose.monitoring.yml"
+    - src: "prometheus.yml"
+      dest: "prometheus.yml"
+    - src: "loki-config.yml"
+      dest: "loki-config.yml"
+    - src: "promtail-config.yml"
+      dest: "promtail-config.yml"
+    - src: "grafana.ini"
+      dest: "grafana.ini"
+    - src: "nginx.conf"
+      dest: "nginx.conf"
+    - src: "conf.d"
+      dest: "."
+    - src: "certbot"
+      dest: "."
+    - src: "renew-cert.sh"
+      dest: "renew-cert.sh"
+
+- name: Create .env file for compose
+  copy:
+    dest: "/home/ubuntu/app/.env"
+    content: "COMPOSE_FILE=docker-compose.app.yml:docker-compose.monitoring.yml"
+
+- name: Request LetsEncrypt SSL Cert
+  script:
+    cmd: "init-certbot.sh"
+  args:
+    chdir: "/home/ubuntu/app"
+
+- name: Start Docker Containers
+  command: docker-compose up -d
+  args:
+    chdir: "/home/ubuntu/app"
+
+- name: Add a cron job to run a script daily at 12AM
+  cron:
+    name: "Certbot renewal"
+    minute: "0"
+    hour: "0"
+    job: "/home/ubuntu/app/renew-cert.sh"
+      state: present

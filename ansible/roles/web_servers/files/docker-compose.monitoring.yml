@@ -1,0 +1,59 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - app_network
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    environment:
+      - "GF_INSTALL_PLUGINS=https://storage.googleapis.com/integration-artifacts/grafana-lokiexplore-app/grafana-lokiexplore-app-latest.zip;grafana-lokiexplore-app"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana.ini:/etc/grafana/grafana.ini:ro
+    networks:
+      - app_network
+
+  loki:
+    image: grafana/loki:latest
+    command: -config.file=/etc/loki/config.yml
+    restart: unless-stopped
+    volumes:
+      - "./loki-config.yml:/etc/loki/config.yml"
+    networks:
+      - app_network
+
+  promtail:
+    image: grafana/promtail:latest
+    restart: unless-stopped
+    volumes:
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail-config.yml:/etc/promtail/config.yml
+    #      - /home/dod/window_docker/containers/:/rootfs/var/lib/docker/containers:ro # FOR WSL2 docker volume see more (https://github.com/vacp2p/wakurtosis/issues/58)
+    command: "-config.file=/etc/promtail/config.yml"
+    networks:
+      - app_network
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+    #     - /home/dod/window_docker/:/rootfs/var/lib/docker:ro # see above
+    networks:
+      - app_network
+
+volumes:
+  grafana-storage:
+    driver: local

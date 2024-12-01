@@ -1,0 +1,17 @@
+
+map $scheme $hsts_header {
+    https   "max-age=63072000; preload";
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    # server_name damilola.chickenkiller.com www.damilola.chickenkiller.com db.damilola.chickenkiller.com;
+    server_name damilola.jumpingcrab.com www.damilola.jumpingcrab.com db.damilola.jumpingcrab.com;
+
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+}

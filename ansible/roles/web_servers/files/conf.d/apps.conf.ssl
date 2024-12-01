@@ -1,0 +1,170 @@
+server {
+  set $forward_scheme http;
+  set $server         "nginx";
+  set $port           80;
+
+  listen 443 ssl;
+  listen [::]:443 ssl;
+  # server_name damilola.chickenkiller.com www.damilola.chickenkiller.com; 
+  server_name damilola.jumpingcrab.com www.damilola.jumpingcrab.com;
+   
+  ssl_certificate /etc/letsencrypt/live/damilola.jumpingcrab.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/damilola.jumpingcrab.com/privkey.pem;
+
+
+  location /api {
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Scheme $scheme;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-For    $remote_addr;
+    proxy_set_header X-Real-IP		$remote_addr;
+
+    set $proxy_forward_scheme http;
+    set $proxy_server         "backend";
+    set $proxy_port           8000;
+
+    proxy_pass       $proxy_forward_scheme://$proxy_server:$proxy_port;
+ 
+  }
+
+  location /docs {
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Scheme $scheme;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-For    $remote_addr;
+    proxy_set_header X-Real-IP		$remote_addr;
+
+    set $proxy_forward_scheme http;
+    set $proxy_server         "backend";
+    set $proxy_port           8000;
+
+    proxy_pass       $proxy_forward_scheme://$proxy_server:$proxy_port/api/v1/openapi.json;
+    
+  }
+
+  location /prometheus {
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Scheme $scheme;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-For    $remote_addr;
+    proxy_set_header X-Real-IP		$remote_addr;
+
+    set $proxy_forward_scheme http;
+    set $proxy_server         "prometheus";
+    set $proxy_port           9090;
+
+    rewrite ^/prometheus/?(.*)$ /$1 break;
+    proxy_redirect / /prometheus/;
+    
+    proxy_pass       $proxy_forward_scheme://$proxy_server:$proxy_port;
+    
+  }
+
+  location /grafana {
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Scheme $scheme;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-For    $remote_addr;
+    proxy_set_header X-Real-IP		$remote_addr;
+
+    set $proxy_forward_scheme http;
+    set $proxy_server         "grafana";
+    set $proxy_port           3000;
+
+    rewrite ^/grafana/?(.*)$ /$1 break;
+    proxy_pass       $proxy_forward_scheme://$proxy_server:$proxy_port;
+  }
+
+  location /loki {
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Scheme $scheme;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-For    $remote_addr;
+    proxy_set_header X-Real-IP		$remote_addr;
+
+    set $proxy_forward_scheme http;
+    set $proxy_server         "loki";
+    set $proxy_port           3100;
+    
+    rewrite ^/loki/?(.*)$ /$1 break;
+    proxy_redirect / /loki/;
+
+    proxy_pass       $proxy_forward_scheme://$proxy_server:$proxy_port;    
+  }
+
+  location /promtail {
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Scheme $scheme;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-For    $remote_addr;
+    proxy_set_header X-Real-IP		$remote_addr;
+
+    set $proxy_forward_scheme http;
+    set $proxy_server         "promtail";
+    set $proxy_port           9080;
+  
+    rewrite ^/promtail/?(.*)$ /$1 break;
+    proxy_redirect / /promtail/;
+
+    proxy_pass       $proxy_forward_scheme://$proxy_server:$proxy_port;
+  }
+
+  location /cadvisor {
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Scheme $scheme;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-For    $remote_addr;
+    proxy_set_header X-Real-IP		$remote_addr;
+
+    set $proxy_forward_scheme http;
+    set $proxy_server         "cadvisor";
+    set $proxy_port           8080;
+
+    rewrite ^/cadvisor/?(.*)$ /$1 break;
+    proxy_redirect / /cadvisor/;
+    
+    proxy_pass       $proxy_forward_scheme://$proxy_server:$proxy_port;
+  
+  }
+  
+  location /assets {
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Scheme $scheme;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-For    $remote_addr;
+    proxy_set_header X-Real-IP		$remote_addr;
+
+    set $proxy_forward_scheme http;
+    set $proxy_server         "frontend";
+    set $proxy_port           80;
+
+    proxy_pass       $proxy_forward_scheme://$proxy_server:$proxy_port;    
+  } 
+
+  location / {
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Scheme $scheme;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-For    $remote_addr;
+    proxy_set_header X-Real-IP		$remote_addr;
+
+    set $proxy_forward_scheme http;
+    set $proxy_server         "frontend";
+    set $proxy_port           80;
+
+    rewrite ^/?(.*)$ / break;
+
+    proxy_pass       $proxy_forward_scheme://$proxy_server:$proxy_port;    
+  } 
+
+
+}
