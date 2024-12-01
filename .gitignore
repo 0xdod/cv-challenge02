@@ -4,3 +4,4 @@ inventory.ini
 data/keys.json
 data/database.sqlite
 *.pem
+certbot

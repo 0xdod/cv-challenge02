@@ -34,7 +34,7 @@ resource "local_file" "ansible_inventory" {
   provisioner "local-exec" {
     command = <<-EOF
       aws ec2 wait instance-status-ok --instance-ids ${aws_instance.web_server.id}
-      ssh-keygen -f "/home/dod/.ssh/known_hosts" -R "${var.eip != null ? aws_eip_association.eip_assoc.public_ip : aws_instance.web_server.public_ip} > /dev/null 2>&1"
+      ssh-keygen -f "~/.ssh/known_hosts" -R "${var.eip != null ? aws_eip_association.eip_assoc.public_ip : aws_instance.web_server.public_ip} > /dev/null 2>&1"
       ansible-playbook -i inventory.ini  ansible/deploy.yml
     EOF 
   }
