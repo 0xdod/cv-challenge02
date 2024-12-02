@@ -1,3 +1,4 @@
+
 server {
   set $forward_scheme http;
   set $server         "nginx";
@@ -5,11 +6,10 @@ server {
 
   listen 443 ssl;
   listen [::]:443 ssl;
-  # server_name damilola.chickenkiller.com www.damilola.chickenkiller.com; 
-  server_name damilola.jumpingcrab.com www.damilola.jumpingcrab.com;
+  server_name $APP_SERVER_NAME www.$APP_SERVER_NAME;
    
-  ssl_certificate /etc/letsencrypt/live/damilola.jumpingcrab.com/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/damilola.jumpingcrab.com/privkey.pem;
+  ssl_certificate /etc/letsencrypt/live/$APP_SERVER_NAME/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/$APP_SERVER_NAME/privkey.pem;
 
 
   location /api {
@@ -136,6 +136,10 @@ server {
   
   location /assets {
 
+    if ($host = $APP_SERVER_NAME) {
+      return 301 $scheme://www.$APP_SERVER_NAME$request_uri;
+    }
+
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Scheme $scheme;
     proxy_set_header X-Forwarded-Proto  $scheme;
@@ -150,6 +154,10 @@ server {
   } 
 
   location / {
+
+    if ($host = $APP_SERVER_NAME) {
+      return 301 $scheme://www.$APP_SERVER_NAME$request_uri;
+    }
 
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Scheme $scheme;

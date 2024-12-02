@@ -8,8 +8,6 @@ else
     sudo sh get-docker.sh
 fi
 
-sudo usermod -aG docker $USER
-newgrp docker
 
 if command -v docker-compose >/dev/null 2>&1; then
     echo "docker-compose exists"

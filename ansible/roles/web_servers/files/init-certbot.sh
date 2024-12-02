@@ -1,7 +1,6 @@
 #!/bin/bash
-
-# domains=(damilola.chickenkiller.com www.damilola.chickenkiller.com db.damilola.chickenkiller.com)
-domains=(damilola.jumpingcrab.com www.damilola.jumpingcrab.com db.damilola.jumpingcrab.com)
+source .env
+domains=("$APP_SERVER_NAME" "www.$APP_SERVER_NAME" "db.$APP_SERVER_NAME")
 email="damiloladolor+certbot@gmail.com"
 rsa_key_size=4096
 data_path="./certbot"
@@ -19,7 +18,7 @@ if [ -d "$data_path/conf/live/${domains[0]}" ]; then
 fi
 
 echo "### Starting nginx for certbot..."
-docker-compose up -d nginx
+sudo docker-compose up -d nginx
 
 certbot_domains=()
 
@@ -29,7 +28,7 @@ done
 
 
 echo "### Requesting Let's Encrypt certificate..."
-docker-compose run --rm certbot certonly --webroot \
+sudo docker-compose run --rm certbot certonly --webroot \
   --webroot-path=/var/www/certbot \
   --email "$email" \
   --agree-tos \
@@ -42,16 +41,15 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-if [ ! -d "conf.d.bak" ]; then
-  sudo cp -r conf.d conf.d.bak
-fi
-
 
 if [ -d "$data_path/conf/live/${domains[0]}" ]; then
   echo "Certificate found. Updating new certificates."
   
-  for file in conf.d/*.ssl; do
-    sudo rm -- "${file%.ssl}" 
+  for file in nginx/conf.d/*.ssl; do
+    if [ -f "${file%.ssl}" ]; then
+      sudo rm -- "${file%.ssl}" 
+    fi
+    
     sudo mv -- "$file" "${file%.ssl}"
   done
 
@@ -59,5 +57,4 @@ fi
 
 
 echo "### Reloading nginx..."
-docker-compose exec nginx nginx -s reload
-
+sudo docker-compose down nginx

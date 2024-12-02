@@ -8,6 +8,11 @@ resource "aws_instance" "web_server" {
     #!/bin/bash
     curl -fsSL https://get.docker.com -o get-docker.sh
     sudo sh get-docker.sh
+    sudo usermod -aG docker ubuntu
+    newgrp docker
+    curl -SL https://github.com/docker/compose/releases/download/v2.30.3/docker-compose-linux-x86_64 -o docker-compose
+    sudo chmod +x docker-compose
+    sudo mv docker-compose /usr/local/bin/docker-compose
   EOF
 
   tags = {
@@ -33,9 +38,8 @@ resource "local_file" "ansible_inventory" {
 
   provisioner "local-exec" {
     command = <<-EOF
-      aws ec2 wait instance-status-ok --instance-ids ${aws_instance.web_server.id}
-      ssh-keygen -f "~/.ssh/known_hosts" -R "${var.eip != null ? aws_eip_association.eip_assoc.public_ip : aws_instance.web_server.public_ip} > /dev/null 2>&1"
-      ansible-playbook -i inventory.ini  ansible/deploy.yml
+      aws ec2 wait instance-status-ok --instance-ids ${aws_instance.web_server.id} 
+      ansible-playbook -i inventory.ini -e "APP_SERVER_NAME=${var.domain_name}" ansible/deploy.yml
     EOF 
   }
 }

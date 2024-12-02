@@ -25,19 +25,20 @@
       dest: "promtail-config.yml"
     - src: "grafana.ini"
       dest: "grafana.ini"
-    - src: "nginx.conf"
-      dest: "nginx.conf"
-    - src: "conf.d"
+    - src: "nginx"
       dest: "."
     - src: "certbot"
       dest: "."
     - src: "renew-cert.sh"
       dest: "renew-cert.sh"
 
-- name: Create .env file for compose
+- name: Create .env for docker-compose to load
   copy:
     dest: "/home/ubuntu/app/.env"
-    content: "COMPOSE_FILE=docker-compose.app.yml:docker-compose.monitoring.yml"
+    content: |
+      export COMPOSE_FILE=docker-compose.app.yml:docker-compose.monitoring.yml
+      export APP_SERVER_NAME="{{ APP_SERVER_NAME }}"
+    mode: 0644
 
 - name: Request LetsEncrypt SSL Cert
   script:
@@ -47,6 +48,7 @@
 
 - name: Start Docker Containers
   command: docker-compose up -d
+  become: yes
   args:
     chdir: "/home/ubuntu/app"
 
@@ -56,4 +58,4 @@
     minute: "0"
     hour: "0"
     job: "/home/ubuntu/app/renew-cert.sh"
-      state: present
+    state: present

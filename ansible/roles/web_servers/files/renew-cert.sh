@@ -1,6 +1,7 @@
 #!/bin/bash
 cd /home/ubuntu/app
+source .env
 
-docker-compose run --rm certbot renew
-docker-compose exec nginx nginx -s reload
+sudo docker-compose run --rm certbot renew
+sudo docker-compose exec nginx nginx -s reload
 

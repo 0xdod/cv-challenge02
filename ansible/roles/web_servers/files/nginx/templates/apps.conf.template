@@ -1,3 +1,4 @@
+
 server {
   set $forward_scheme http;
   set $server         "nginx";
@@ -5,8 +6,7 @@ server {
 
   listen 80;
   listen [::]:80;
-  # server_name damilola.chickenkiller.com www.damilola.chickenkiller.com; 
-  server_name damilola.jumpingcrab.com www.damilola.jumpingcrab.com;
+  server_name $APP_SERVER_NAME;
   
   location /.well-known/acme-challenge/ {
     root /var/www/certbot;

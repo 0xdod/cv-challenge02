@@ -1,0 +1,16 @@
+
+map $scheme $hsts_header {
+    https   "max-age=63072000; preload";
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $APP_SERVER_NAME www.$APP_SERVER_NAME db.$APP_SERVER_NAME;
+
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+}
