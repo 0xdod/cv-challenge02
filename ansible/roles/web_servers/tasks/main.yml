@@ -1,6 +1,7 @@
 - name: Ensure Docker Exists
   script:
     cmd: "install-docker.sh"
+  become: yes
 
 - name: Ensure parent directory exist
   file:
@@ -27,8 +28,6 @@
       dest: "grafana.ini"
     - src: "nginx"
       dest: "."
-    - src: "certbot"
-      dest: "."
     - src: "renew-cert.sh"
       dest: "renew-cert.sh"
 
@@ -43,6 +42,7 @@
 - name: Request LetsEncrypt SSL Cert
   script:
     cmd: "init-certbot.sh"
+  become: yes
   args:
     chdir: "/home/ubuntu/app"
 

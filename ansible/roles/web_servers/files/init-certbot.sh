@@ -47,7 +47,8 @@ if [ -d "$data_path/conf/live/${domains[0]}" ]; then
   
   for file in nginx/conf.d/*.ssl; do
     if [ -f "${file%.ssl}" ]; then
-      sudo rm -- "${file%.ssl}" 
+      sudo rm -- "${file%.ssl}"
+      sudo rm -- "nginx/templates/$(basename ${file%.ssl}).template"
     fi
     
     sudo mv -- "$file" "${file%.ssl}"
@@ -58,3 +59,4 @@ fi
 
 echo "### Reloading nginx..."
 sudo docker-compose down nginx
+
